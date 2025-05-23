@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl border border-gray-200">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Unit & Financing Calculator</h1>
+
+        <div class="mb-6">
+            <label for="unit-select" class="block text-gray-700 text-sm font-semibold mb-2">Select Unit:</label>
+            <div class="relative">
+                <select id="unit-select" class="block appearance-none w-full bg-gray-50 border border-gray-300 text-gray-900 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition duration-300 ease-in-out">
+                    <option value="">-- Please select a unit --</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p class="text-gray-700 text-sm font-semibold mb-2">Unit Price:</p>
+            <p id="unit-price" class="text-2xl font-bold text-blue-700">$0.00 USD</p>
+        </div>
+
+        <div class="mb-6">
+            <label for="financing-select" class="block text-gray-700 text-sm font-semibold mb-2">Select Financing Plan:</label>
+            <div class="relative">
+                <select id="financing-select" class="block appearance-none w-full bg-gray-50 border border-gray-300 text-gray-900 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-blue-500 transition duration-300 ease-in-out">
+                    <option value="">-- Please select a financing plan --</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                <p class="text-gray-700 text-sm font-semibold mb-2">Down Payment:</p>
+                <p id="down-payment" class="text-2xl font-bold text-green-700">$0.00 USD</p>
+            </div>
+            <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <p class="text-gray-700 text-sm font-semibold mb-2">Estimated Monthly Payment:</p>
+                <p id="monthly-payment" class="text-2xl font-bold text-purple-700">$0.00 USD</p>
+                <p id="payment-details" class="text-sm text-gray-600 mt-1"></p>
+            </div>
+        </div>
+
+        <div class="text-center text-gray-500 text-xs mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <p>Prices and financing options are subject to change without notice. This calculator provides estimates only.</p>
+            <p class="mt-2">A $5,000 USD deposit is required to reserve a unit.</p>
+        </div>
+    </div>
+
+    <script>
+        // Data parsed from the provided PDF documents
+        const unitsData = [
+            // Uncategorized units
+            { unit: "101", price: 265000 },
+            // GARDEN units
+            { unit: "103", price: 265000, type: "GARDEN" },
+            { unit: "104", price: 265000, type: "GARDEN" },
+            { unit: "106", price: 265000, type: "GARDEN" },
+            { unit: "107", price: 265000, type: "GARDEN" },
+            // ZAC units
+            { unit: "201", price: 210000, type: "ZAC" },
+            { unit: "205", price: 210000, type: "ZAC" },
+            { unit: "207", price: 210000, type: "ZAC" },
+            { unit: "208", price: 210000, type: "ZAC" },
+            // CAN units
+            { unit: "212", price: 198000, type: "CAN" },
+            { unit: "213", price: 198000, type: "CAN" },
+            { unit: "311", price: 198000, type: "CAN" },
+            { unit: "312", price: 198000, type: "CAN" },
+            { unit: "313", price: 198000, type: "CAN" },
+            // HOB units (PENTHOUSE type in source but categorized as HOB by user)
+            { unit: "305", price: 335000, type: "HOB" },
+            { unit: "308", price: 335000, type: "HOB" },
+            // Other units from source, not categorized by user or were previously missed
+            { unit: "209", price: 210000 },
+            { unit: "211", price: 198000 }
+        ];
+
+        const financingPlans = [
+            { id: "plan1", name: "PLAN 1 (1 year, 3.99% APR)", downPaymentPct: 0.35, financedPct: 0.65, termYears: 1, interestRate: 0.0399 },
+            { id: "plan2", name: "PLAN 2 (3 years, 7.99% APR)", downPaymentPct: 0.35, financedPct: 0.65, termYears: 3, interestRate: 0.0799 },
+            { id: "plan3", name: "PLAN 3 (1 year, INTEREST FREE)", downPaymentPct: 0.50, financedPct: 0.50, termYears: 1, interestRate: 0 },
+            { id: "plan4", name: "PLAN 4 (3 years, 5.99% APR)", downPaymentPct: 0.50, financedPct: 0.50, termYears: 3, interestRate: 0.0599 }
+        ];
+
+        // Get DOM elements
+        const unitSelect = document.getElementById('unit-select');
+        const unitPriceDisplay = document.getElementById('unit-price');
+        const financingSelect = document.getElementById('financing-select');
+        const downPaymentDisplay = document.getElementById('down-payment');
+        const monthlyPaymentDisplay = document.getElementById('monthly-payment');
+        const paymentDetailsDisplay = document.getElementById('payment-details');
+
+        let selectedUnitPrice = 0;
+        let selectedFinancingPlan = null;
+
+        /**
+         * Populates the unit selection dropdown with available units.
+         */
+        function populateUnits() {
+            unitsData.forEach(unit => {
+                const option = document.createElement('option');
+                option.value = unit.price;
+                // Display the unit type if available
+                option.textContent = `Unit ${unit.unit} ${unit.type ? `(${unit.type})` : ''} ($${unit.price.toLocaleString()} USD)`;
+                unitSelect.appendChild(option);
+            });
+        }
+
+        /**
+         * Populates the financing plan selection dropdown.
+         */
+        function populateFinancingOptions() {
+            financingPlans.forEach(plan => {
+                const option = document.createElement('option');
+                option.value = plan.id;
+                option.textContent = plan.name;
+                financingSelect.appendChild(option);
+            });
+        }
+
+        /**
+         * Calculates and displays the down payment and monthly payments.
+         */
+        function calculatePayments() {
+            // Reset displays if no unit or plan is selected
+            if (!selectedUnitPrice || !selectedFinancingPlan) {
+                downPaymentDisplay.textContent = '$0.00 USD';
+                monthlyPaymentDisplay.textContent = '$0.00 USD';
+                paymentDetailsDisplay.textContent = '';
+                return;
+            }
+
+            const downPayment = selectedUnitPrice * selectedFinancingPlan.downPaymentPct;
+            downPaymentDisplay.textContent = `$${downPayment.toLocaleString()} USD`;
+
+            const financedAmount = selectedUnitPrice * selectedFinancingPlan.financedPct;
+            const annualInterestRate = selectedFinancingPlan.interestRate;
+            const numberOfPayments = selectedFinancingPlan.termYears * 12; // Total months
+
+            let monthlyPayment = 0;
+
+            if (annualInterestRate === 0) {
+                // Simple division for interest-free loans
+                monthlyPayment = financedAmount / numberOfPayments;
+            } else {
+                // Formula for fixed-rate mortgage payments (M = P [ i(1 + i)^n ] / [ (1 + i)^n – 1])
+                const monthlyInterestRate = annualInterestRate / 12;
+                monthlyPayment = financedAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
+            }
+
+            if (isNaN(monthlyPayment) || !isFinite(monthlyPayment)) {
+                monthlyPaymentDisplay.textContent = 'Calculation Error';
+                paymentDetailsDisplay.textContent = 'Please check inputs.';
+            } else {
+                monthlyPaymentDisplay.textContent = `$${monthlyPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+                paymentDetailsDisplay.textContent = `(${selectedFinancingPlan.termYears} years, ${numberOfPayments} months)`;
+            }
+        }
+
+        // Event Listeners
+        unitSelect.addEventListener('change', (event) => {
+            selectedUnitPrice = parseFloat(event.target.value);
+            unitPriceDisplay.textContent = `$${selectedUnitPrice.toLocaleString()} USD`;
+            calculatePayments();
+        });
+
+        financingSelect.addEventListener('change', (event) => {
+            const selectedPlanId = event.target.value;
+            selectedFinancingPlan = financingPlans.find(plan => plan.id === selectedPlanId);
+            calculatePayments();
+        });
+
+        // Initialize the form on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            populateUnits();
+            populateFinancingOptions();
+        });
+    </script>
+</body>
+</html>
+
